@@ -9,7 +9,7 @@ float	getRandom(float min, float max)
 	return rand;
 }
 
-void free_and_close(t_movables *movables, pthread_t *thread)
+void free_and_close(t_movables *movables, pthread_t *thread, Texture2D b)
 {
 	pthread_cancel(*thread);
 	CloseAudioDevice();
@@ -19,6 +19,7 @@ void free_and_close(t_movables *movables, pthread_t *thread)
 	pthread_mutex_unlock(&movables->m_balls);
 	delete thread;
 	delete movables;
+	UnloadTexture(b);
 }
 
 bool checkExtension(std::string filename)
@@ -126,7 +127,6 @@ void BricksToFile(std::string filename, std::vector<Brick> &b)
 
 	for (size_t i = 3; i < b.size(); ++i)
 		arrlevel[(int)(b[i].getPos().y / size.y)][(int)(b[i].getPos().x / size.x) - 26] = b[i].getType() + '0';
-	
 	for (int i = 0; i <= 49; ++i)
 	{
 		for (size_t x = 0; x < arrlevel[i].size(); ++x)
@@ -136,4 +136,30 @@ void BricksToFile(std::string filename, std::vector<Brick> &b)
 	}
 
 	new_level.close();
+}
+
+void DrawMenuBackground()
+{
+    // 🎮 Colores base para el fondo
+    Color bgStart = { 20, 20, 30, 255 };   // Color de inicio (más oscuro)
+    Color bgEnd = { 40, 40, 60, 255 };     // Color final del gradiente (más claro)
+
+    // 🌌 Fondo con gradiente suave de arriba hacia abajo
+    for (int i = 0; i < GetScreenHeight(); i++) {
+        Color currentColor = ColorLerp(bgStart, bgEnd, (float)i / GetScreenHeight());
+        DrawLine(0, i, GetScreenWidth(), i, currentColor);  // Gradiente suave
+    }
+
+    // 🔲 Líneas de rejilla sutiles (más suave que antes)
+    Color gridColor = { 255, 255, 255, 40 };  // Líneas sutiles
+    for (int i = 0; i < GetScreenWidth(); i += 50) {
+        DrawLine(i, 0, i, GetScreenHeight(), gridColor);  // Líneas verticales
+    }
+    for (int i = 0; i < GetScreenHeight(); i += 50) {
+        DrawLine(0, i, GetScreenWidth(), i, gridColor);  // Líneas horizontales
+    }
+
+    // 🏁 Borde simple en blanco para el menú
+    Color borderColor = { 255, 255, 255, 100 };  // Borde blanco translúcido
+    DrawRectangleLines(0, 0, GetScreenWidth(), GetScreenHeight(), borderColor);
 }

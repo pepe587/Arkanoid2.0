@@ -35,8 +35,22 @@ typedef struct s_movables
     pthread_mutex_t m_powerups;
 } t_movables;
 
+typedef struct s_settings
+{
+	unsigned int	maxfps;
+	unsigned short	volume;
+} t_settings;
+
+typedef struct s_quadrant
+{
+	Rectangle r;
+	std::vector<Ball> Balls;
+	std::vector<Brick> Bricks;
+} t_quadrant;
+
+
 float	getRandom(float min, float max);
-void	free_and_close(t_movables *movables, pthread_t *thread);
+void	free_and_close(t_movables *movables, pthread_t *thread, Texture2D b);
 bool	checkExtension(std::string filename);
 bool	thereAreUtil(t_movables *movables);
 int		GetFps(double &time, int &fps_counter);
@@ -46,3 +60,4 @@ Vector2 roundPos(Vector2 pos);
 void	deleteByPos(std::vector<Brick> &b);
 bool	IsTaken(std::vector<Brick> &b, Brick &newB);
 void	BricksToFile(std::string filename, std::vector<Brick> &b);
+void	DrawMenuBackground();

@@ -8,6 +8,33 @@
 	-Fix the Bug of the corners (Gameplay)
 */
 
+Texture2D CreateBackground() {
+    int screenWidth = GetMonitorWidth(0);
+    int screenHeight = GetMonitorHeight(0);
+    Image background = GenImageColor(screenWidth, screenHeight, (Color){ 0, 0, 0, 255 });
+
+    // Zona izquierda (Información)
+    ImageDrawRectangle(&background, 0, 0, screenWidth * 0.25, screenHeight, (Color){ 15, 15, 20, 255 });
+
+    // Zona derecha (Información)
+    ImageDrawRectangle(&background, screenWidth * 0.75, 0, screenWidth * 0.25, screenHeight, (Color){ 15, 15, 20, 255 });
+
+    // Zona de gameplay (Central)
+    for (int y = 0; y < screenHeight; y++) {
+        float t = (float)y / (float)screenHeight;
+        Color gradientColor = ColorLerp((Color){ 10, 10, 20, 255 }, (Color){ 0, 0, 40, 255 }, t);
+        ImageDrawRectangle(&background, screenWidth * 0.25, y, screenWidth * 0.5, 1, gradientColor);
+    }
+
+    // Bordes luminosos para separar zonas
+    ImageDrawRectangle(&background, screenWidth * 0.25 - 2, 0, 2, screenHeight, (Color){ 255, 107, 107, 200 }); // Izquierda
+    ImageDrawRectangle(&background, screenWidth * 0.75, 0, 2, screenHeight, (Color){ 255, 107, 107, 200 });     // Derecha
+
+    Texture2D texture = LoadTextureFromImage(background);
+    UnloadImage(background);
+    return texture;
+}
+
 void	create_level()
 {
 	std::vector<Brick> Bricks;
@@ -21,6 +48,7 @@ void	create_level()
 	Bricks.push_back(Brick(INDESTRUCTIBLE, Vector2 {(float)(GetMonitorWidth(0) * 0.25 + GetMonitorWidth(0) / 6 +  GetMonitorWidth(0) / 12 - sizeB.x * 2), (float)(GetMonitorHeight(0) - GetMonitorHeight(0) / 10 + GetMonitorHeight(0) / 20 - sizeB.y * 2)}, Vector2 {sizeB.x * 4, sizeB.y * 4}));
 	Bricks.push_back(Brick(RESISTANT, Vector2 {(float)(GetMonitorWidth(0) * 0.25 + GetMonitorWidth(0) / 3 +  GetMonitorWidth(0) / 12 - sizeB.x * 2), (float)(GetMonitorHeight(0) - GetMonitorHeight(0) / 10 + GetMonitorHeight(0) / 20 - sizeB.y * 2)}, Vector2 {sizeB.x * 4, sizeB.y * 4}));
 	Brick *actual = NULL;
+	Texture2D background = CreateBackground();
 	while (1)
 	{
 		if (IsKeyDown(KEY_LEFT))
@@ -29,7 +57,11 @@ void	create_level()
 				delete actual;
 			break ;
 		}
-
+		if (IsKeyDown(KEY_C))
+		{
+			delete actual;
+			return ;
+		}
 		if (actual)
 			actual->setPos(roundPos(GetMousePosition()));
 
@@ -44,8 +76,8 @@ void	create_level()
 			deleteByPos(Bricks);
 
 		BeginDrawing();
-		ClearBackground(BLACK);
-		DrawRectangle(GetMonitorWidth(0) * 0.25, 0, GetMonitorWidth(0) * 0.5, GetMonitorHeight(0), BLUE);
+		DrawTexture(background, 0, 0, WHITE);
+		DrawRectangle(GetMonitorWidth(0) * 0.25, 0, GetMonitorWidth(0) * 0.5, GetMonitorHeight(0), (Color){ 0, 102, 204, 50 });
 		IBrick.Draw(BLACK, BLANK);
 		RBrick.Draw(BLACK, BLANK);
 		SBrick.Draw(BLACK, BLANK);
@@ -87,10 +119,33 @@ void	create_level()
 		input.Draw(BLACK);
 		EndDrawing();
 		input.listenKeys();
+		if (IsKeyDown(KEY_C))
+		{
+			delete actual;
+			return ;
+		}
 	}
 	BricksToFile(input.getValue(), Bricks);
 }
 
+/*Los cuadrantes son para el spatial partioning,
+el diametro de la bola es (ancho de la pantalla * 0.75) / 100
+quiero que sean 3 bolas de ancho y 3 de largo supongo pero tengoqq hacer q encaje perfecto *****
+*/
+
+void init_quadrants(t_quadrants **q)
+{
+	int width = GetMonitorWidth(0);
+	int height = GetMonitorHeight(0);
+	int x = width * 0.25;
+	int y = 0;
+	double ballDiameter = (GetMonitorPhysicalWidth(0) * 0.75) / 100;
+
+	while (i <= width)
+	{
+		
+	}
+}
 
 void *refresh_movables(void *_movables)
 {
@@ -100,10 +155,11 @@ void *refresh_movables(void *_movables)
 	//struct timeval start;
 	//struct timeval end;
 	int fps_counter = 0;
-
+	t_quadrant q[5][10];
 	InitAudioDevice();
 	Sound sound = LoadSound("sounds/ball-bounce.wav");
 	/*Rectangle movement*/
+	init_quadrants(q);
 	while (!WindowShouldClose())
 	{
 		try { fps = GetFps(time, fps_counter); std::cout << fps <<"\n";}
@@ -220,6 +276,7 @@ void new_game(char *level)
 		return ;
 	int	BricksBreakables = brickeableBricks(Bricks);
 	int BricksBreaks = 0;
+	Texture2D background = CreateBackground();
 
 	/*TEST FOR POWERUPS*/
 	//PowerUps.push_back(new ExtraBall(Vector2 {(float)GetMonitorWidth(0) / 2, (float)GetMonitorHeight(0) / 3}, Vector2 {0, 0.5}));
@@ -254,11 +311,11 @@ void new_game(char *level)
 
 		/*Draw Scope*/
 		BeginDrawing();
-		ClearBackground(BLACK);
+		DrawTexture(background, 0, 0, WHITE);
 		DrawText(("FPS: " + std::to_string(GetFPS())).c_str(), 10, 10, 50, WHITE);
 		DrawText(((std::to_string((((float)movables->BricksBreaks / (float)BricksBreakables)) * 100) + " %").c_str()), 10, 100, 50, WHITE);
-		DrawRectangle(GetMonitorWidth(0) * 0.25, 0, GetMonitorWidth(0) * 0.5, GetMonitorHeight(0), BLUE);
-		
+		DrawRectangle(GetMonitorWidth(0) * 0.25, 0, GetMonitorWidth(0) * 0.5, GetMonitorHeight(0), (Color){ 0, 102, 204, 50 });
+
 		pthread_mutex_lock(&movables->m_rectangle);
 		local.R = movables->R;
 		pthread_mutex_unlock(&movables->m_rectangle);
@@ -284,7 +341,7 @@ void new_game(char *level)
 
 		EndDrawing();
 	}
-	free_and_close(movables, thread);
+	free_and_close(movables, thread, background);
 	return ;
 }
 
@@ -322,7 +379,7 @@ void choose_level()
 		if (IsKeyDown(KEY_LEFT))
 			return ;
 		BeginDrawing();
-		ClearBackground(BLUE);
+		DrawMenuBackground();
 		for (size_t i = 0; i < buttons.size(); ++i)
 			buttons[i].Draw(BLACK, GRAY);
 		for (size_t i = 0; i < buttons.size(); ++i)
@@ -338,25 +395,44 @@ void choose_level()
 	}
 }
 
+
 int main(void)
 {
 	InitWindow(1, 1, "Game");
 	SetWindowSize(GetMonitorWidth(0), GetMonitorHeight(0));
 	ToggleFullscreen();
 
-	Button create_level_button(Vector2 {(float)(GetMonitorWidth(0) * 0.15), (float)(GetMonitorHeight(0) * 0.2)}, Vector2{ (float)(GetMonitorWidth(0) * 0.1), (float)(GetMonitorHeight(0) * 0.05)}, "Create Level", WHITE);
-	Button new_game_button(Vector2 {(float)(GetMonitorWidth(0) * 0.15), (float)(GetMonitorHeight(0) * 0.1)}, Vector2{ (float)(GetMonitorWidth(0) * 0.1), (float)(GetMonitorHeight(0) * 0.05)}, "New Game", WHITE);
+	// Tamaño y espacio entre los botones
+	float buttonWidth = (float)(GetMonitorWidth(0) * 0.3); // 30% del ancho de la pantalla
+	float buttonHeight = (float)(GetMonitorHeight(0) * 0.05); // 5% de la altura de la pantalla
+	float verticalSpacing = (float)(GetMonitorHeight(0) * 0.05); // Espacio entre botones
+
+	// Posición de los botones
+	float startX = (GetMonitorWidth(0) - buttonWidth) / 2; // Centrado horizontal
+	float startY = (GetMonitorHeight(0) - (buttonHeight * 4 + verticalSpacing * 3)) / 2; // Centrado vertical (considerando 4 botones y el espacio entre ellos)
+
+	// Crear los botones con posiciones ajustadas
+	Button Playbutton(Vector2{ startX, startY }, Vector2{ buttonWidth, buttonHeight }, "Play", WHITE);
+	Button create_level_button(Vector2{ startX, startY + buttonHeight + verticalSpacing }, Vector2{ buttonWidth, buttonHeight }, "Create Level", WHITE);
+	Button settings_button(Vector2{ startX, startY + (buttonHeight + verticalSpacing) * 2 }, Vector2{ buttonWidth, buttonHeight }, "Settings", WHITE);
+	Button exit_button(Vector2{ startX, startY + (buttonHeight + verticalSpacing) * 3 }, Vector2{ buttonWidth, buttonHeight }, "Exit", WHITE);
 	while (!WindowShouldClose())
 	{
 		BeginDrawing();
-		ClearBackground(BLUE);
-		new_game_button.Draw(BLACK, GRAY);
+		DrawMenuBackground();
+		Playbutton.Draw(BLACK, GRAY);
 		create_level_button.Draw(BLACK, GRAY);
+		settings_button.Draw(BLACK, GRAY);
+		exit_button.Draw(BLACK, GRAY);
 		EndDrawing();
-		if (new_game_button.isClicked())
+		if (Playbutton.isClicked())
 			choose_level();
 		if (create_level_button.isClicked())
 			create_level();
+		if (settings_button.isClicked())
+			std::cout << "en desarrollo\n";
+		if (exit_button.isClicked())
+			break;
 	}
 	CloseWindow();
 	return 0;
