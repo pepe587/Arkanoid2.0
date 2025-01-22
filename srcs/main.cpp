@@ -11,8 +11,16 @@ int main(void)
 	//for (int i = 0; i < 200; ++i)
 	//	Balls.push_back(Ball(GetMonitorWidth(0) / 2, GetMonitorHeight(0) / 2, Vector2 {(float)(GetRandomValue(-2000, 2000) / 10), (float)(GetRandomValue(-2000, 2000) / 10)}));
 	C_Rectangle R;
+	double time = 0;
+	int fps = 0;
 	while (!WindowShouldClose())
 	{
+		if (GetTime() - time >= 1)
+		{
+			std::cout << "FPS = " << fps << "\n";
+			time = GetTime();
+			fps = 0;
+		}
 		if (IsKeyDown(KEY_RIGHT))
 			R.move(1);
 		if (IsKeyDown(KEY_LEFT))
@@ -34,6 +42,7 @@ int main(void)
 		for (unsigned long i = 0; i < Balls.size(); ++i)
 			Balls[i].draw();
         EndDrawing();
+		++fps;
 	}
 	CloseWindow();
 }

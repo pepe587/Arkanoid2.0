@@ -8,7 +8,7 @@ Ball::Ball(int _x, int _y, Vector2 _V) : x(_x), y(_y), V(_V)
 
 void Ball::draw()
 {
-	DrawCircle(this->x, this->y, 7.5, RED);
+	DrawCircle(this->x, this->y, Limits.x / 200, RED);
 }
 void Ball::updatePos()
 {
@@ -34,6 +34,11 @@ bool Ball::checkCollition(C_Rectangle &R)
 	if (this->y > R.getPos().y * 1.1)
 		return false;
 	return true;
+}
+
+Vector2 Ball::getVector() const
+{
+	return this->V;
 }
 
 

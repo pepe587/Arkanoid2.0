@@ -1,6 +1,6 @@
 #pragma once
 
-#include "raylib.h"
+#include "../raylib/src/raylib.h"
 #include "Ball.hpp"
 #include "Rectangle.hpp"
 #include "Square.hpp"

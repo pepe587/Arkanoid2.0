@@ -8,7 +8,7 @@ all: $(NAME)
 
 $(RAYLIB):
 	@cmake raylib/ -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
-	@make -C raylib/ install
+	@make -C raylib/
 
 %.o: %.cpp
 	@c++ $(FLAGS) -c $< -o $@

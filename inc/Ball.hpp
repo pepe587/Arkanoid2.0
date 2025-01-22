@@ -14,6 +14,7 @@ public:
 	void draw();
 	void updatePos();
 	bool checkCollition(C_Rectangle &R);
+	Vector2 getVector() const;
 	~Ball();
 };
 
