@@ -6,6 +6,7 @@
 	-Add the squares
 	-Find solution to the problem of FPS (if FPS > speed >)
 	-Add a text with the percent of destroyed square
+	-Change the method of the install the dependencies
 */
 
 
@@ -48,8 +49,10 @@ int main(void)
 				--i;
 			}
 		}
+		/*No balls = No party*/
 		if (!Balls.size())
 			break ;
+		/*Draw Scope*/
 		BeginDrawing();
 		ClearBackground(BLACK);
 		DrawText(("FPS: " + std::to_string(actual_fps)).c_str(), 10, 10, 50, WHITE);
@@ -59,7 +62,6 @@ int main(void)
 			Balls[i].draw();
         EndDrawing();
 		++fps_counter;
-		//usleep(1000000 / 58);
 	}
 	CloseWindow();
 }
