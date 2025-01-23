@@ -14,8 +14,8 @@ C_Rectangle::~C_Rectangle()
 
 void C_Rectangle::move(int n)
 {
-	if ((this->x <= 0 && n < 0)
-		|| (this->x >= GetMonitorWidth(0) - this->width && n > 0))
+	if ((this->x <= GetMonitorWidth(0) * 0.25 && n < 0)
+		|| (this->x >= GetMonitorWidth(0) * 0.75 - this->width && n > 0))
 		return ;
 	this->x += n;
 }

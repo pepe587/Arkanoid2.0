@@ -13,7 +13,7 @@ public:
 	Ball(int _x, int _y, Vector2 V);
 	void draw();
 	void updatePos();
-	bool checkCollition(C_Rectangle &R);
+	bool checkCollition(C_Rectangle &R, Sound &sound);
 	Vector2 getVector() const;
 	~Ball();
 };

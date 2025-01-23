@@ -5,26 +5,32 @@ int main(void)
 {
 	std::vector<Ball> Balls;
 	InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "Game");
-	ToggleFullscreen(); 
+	ToggleFullscreen();
+	InitAudioDevice();
+	//Sound sound = LoadSound("../sounds/ball-bounce.wav");
 	
 	Balls.push_back(Ball(GetMonitorWidth(0) / 2, GetMonitorHeight(0) / 2, Vector2 {0.5, 0.5}));
-	//for (int i = 0; i < 200; ++i)
+	//for (int i = 0; i < 1000; ++i)
 	//	Balls.push_back(Ball(GetMonitorWidth(0) / 2, GetMonitorHeight(0) / 2, Vector2 {(float)(GetRandomValue(-2000, 2000) / 10), (float)(GetRandomValue(-2000, 2000) / 10)}));
 	C_Rectangle R;
 	double time = 0;
-	int fps = 0;
+	int fps_counter = 0;
+	int actual_fps = 0;
 	while (!WindowShouldClose())
 	{
+		/*Calculate FPS*/
 		if (GetTime() - time >= 1)
 		{
-			std::cout << "FPS = " << fps << "\n";
+			actual_fps = fps_counter;
 			time = GetTime();
-			fps = 0;
+			fps_counter = 0;
 		}
+		/*Rectangle movement*/
 		if (IsKeyDown(KEY_RIGHT))
 			R.move(1);
 		if (IsKeyDown(KEY_LEFT))
 			R.move(-1);
+		/*Ball movement & check collition*/
 		for (unsigned long i = 0; i < Balls.size(); ++i)
 		{
 			Balls[i].updatePos();
@@ -37,12 +43,15 @@ int main(void)
 		if (!Balls.size())
 			break ;
 		BeginDrawing();
-		ClearBackground(BLUE);
+		ClearBackground(BLACK);
+		DrawText(("FPS: " + std::to_string(actual_fps)).c_str(), 10, 10, 50, WHITE);
+		DrawRectangle(GetMonitorWidth(0) * 0.25, 0, GetMonitorWidth(0) * 0.5, GetMonitorHeight(0), BLUE);
 		R.draw();
 		for (unsigned long i = 0; i < Balls.size(); ++i)
 			Balls[i].draw();
         EndDrawing();
-		++fps;
+		++fps_counter;
+		//usleep(1000000 / 58);
 	}
 	CloseWindow();
 }

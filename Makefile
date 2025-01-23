@@ -7,13 +7,14 @@ RAYLIB=raylib/raylib/libraylib.a
 all: $(NAME)
 
 $(RAYLIB):
-	@cmake raylib/ -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF
-	@make -C raylib/
+	@cd raylib/ \
+	&& cmake . -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF \
+	&& make
 
 %.o: %.cpp
 	@c++ $(FLAGS) -c $< -o $@
 
-$(NAME):$(OBJS)
+$(NAME):$(OBJS) $(RAYLIB)
 	@c++ $(FLAGS) $(OBJS) $(RAYLIB) -lm -o $(NAME)
 
 clean:
@@ -21,5 +22,6 @@ clean:
 
 fclean: clean
 	@rm -fr $(NAME)
+	@rm -fr $(RAYLIB)
 
 re: fclean all
