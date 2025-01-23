@@ -1,5 +1,13 @@
 #include "../inc/Game.h"
 
+/*To do List:
+	-Add all the Sounds
+	-Add the boosters
+	-Add the squares
+	-Find solution to the problem of FPS (if FPS > speed >)
+	-Add a text with the percent of destroyed square
+*/
+
 
 int main(void)
 {
@@ -7,7 +15,7 @@ int main(void)
 	InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "Game");
 	ToggleFullscreen();
 	InitAudioDevice();
-	//Sound sound = LoadSound("../sounds/ball-bounce.wav");
+	Sound sound = LoadSound("sounds/ball-bounce.wav");
 	
 	Balls.push_back(Ball(GetMonitorWidth(0) / 2, GetMonitorHeight(0) / 2, Vector2 {0.5, 0.5}));
 	//for (int i = 0; i < 1000; ++i)
@@ -34,7 +42,7 @@ int main(void)
 		for (unsigned long i = 0; i < Balls.size(); ++i)
 		{
 			Balls[i].updatePos();
-			if (!Balls[i].checkCollition(R))
+			if (!Balls[i].checkCollition(R, sound))
 			{
 				Balls.erase(Balls.begin() + i);
 				--i;
