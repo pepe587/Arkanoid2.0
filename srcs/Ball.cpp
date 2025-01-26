@@ -6,7 +6,7 @@ Ball::Ball(Vector2 _pos, Vector2 _V) : pos(_pos), V(_V)
 	Limits.y = GetMonitorHeight(0);
 }
 
-void Ball::draw()
+void Ball::Draw()
 {
 	DrawCircle(this->pos.x, this->pos.y, Limits.x / 200, RED);
 }
@@ -16,12 +16,24 @@ void Ball::updatePos()
 	this->pos.y += this->V.y;
 }
 
-Ball::~Ball()
-{
-}
+Ball::~Ball(){}
 
-bool Ball::checkCollition(C_Rectangle &R, Sound &sound)
+bool Ball::checkCollition(C_Rectangle &R, Sound &sound, std::vector<Brick> &Bricks, int &b)
 {
+	for (size_t i = 0; i < Bricks.size(); ++i)
+	{
+		if (CheckCollisionCircleRec(this->pos, this->Limits.x / 200, Rectangle {(float)Bricks[i].getPos().x, (float)Bricks[i].getPos().y, (float)Bricks[i].getSize().x, (float)Bricks[i].getSize().y}))
+		{
+			//V.x *= -1;
+			V.y *= -1;
+			if (!Bricks[i].Hit())
+			{
+				Bricks.erase(Bricks.begin() + i);
+				++b;
+			}
+			return true;
+		}
+	}
 	if (pos.x >= Limits.x || pos.x <= GetMonitorWidth(0) * 0.25)
 	{
 		PlaySound(sound);
@@ -32,11 +44,12 @@ bool Ball::checkCollition(C_Rectangle &R, Sound &sound)
 		PlaySound(sound);
 		V.y *= -1;
 	}
-	if ((int)this->pos.y == (int)R.getPos().y - (int)R.getSize().y / 2 &&
+	if ((this->pos.y >= R.getPos().y - (int)R.getSize().y / 2 && this->pos.y <= R.getPos().y) &&
 		(this->pos.x >= (R.getPos().x ) && this->pos.x <= (R.getPos().x + R.getSize().x)))
 	{
 		PlaySound(sound);
 		V.y *= -1;
+		V.x = (this->pos.x - (R.getPos().x + (R.getSize().x / 2))) / (R.getSize().x / 2);
 	}
 	if (this->pos.y > R.getPos().y * 1.1)
 		return false;

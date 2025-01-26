@@ -22,7 +22,7 @@ void C_Rectangle::move(int n)
 
 void C_Rectangle::draw()
 {
-	DrawRectangle(this->x, this->y, this->width, this->height, BLACK);
+	DrawRectangleRounded(Rectangle {(float)this->x, (float)this->y, (float)this->width, (float)this->height}, 1, 10, BLACK);
 }
 
 Vector2 C_Rectangle::getPos() const

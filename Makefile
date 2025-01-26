@@ -1,6 +1,7 @@
 NAME=game
 FLAGS=-Wall -Werror -Wextra -g
-SRCS=srcs/main.cpp srcs/Rectangle.cpp srcs/Ball.cpp srcs/APowerUp.cpp srcs/ExtraBall.cpp srcs/MultiBall.cpp
+SRCS=srcs/main.cpp srcs/Rectangle.cpp srcs/Ball.cpp srcs/APowerUp.cpp srcs/ExtraBall.cpp \
+	srcs/MultiBall.cpp srcs/Brick.cpp
 OBJS=$(SRCS:.cpp=.o)
 RAYLIB=raylib/raylib/libraylib.a
 
