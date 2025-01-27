@@ -4,6 +4,7 @@
 #include <vector>
 class C_Rectangle;
 class Brick;
+class APowerUp;
 
 class Ball
 {
@@ -15,7 +16,7 @@ class Ball
 		Ball(Vector2 pos, Vector2 V);
 		void Draw();
 		void updatePos();
-		bool checkCollition(C_Rectangle &R, Sound &sound, std::vector<Brick> &Brick, int &b);
+		bool checkCollision(C_Rectangle &R, Sound &sound, std::vector<Brick> &Brick, int &b, std::vector<APowerUp *> &PowerUps);
 		Vector2 getVector() const;
 		Vector2 getPos() const;
 		~Ball();

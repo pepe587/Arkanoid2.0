@@ -17,7 +17,7 @@ class APowerUp
 		virtual void Boost(std::vector<Ball> &v) = 0;
 		virtual void Draw() = 0;
 		void updatePos();
-		bool checkCollition(C_Rectangle &R, Sound &sound, std::vector<Ball> &v);
+		bool checkCollision(C_Rectangle &R, Sound &sound, std::vector<Ball> &v);
 };
 
 

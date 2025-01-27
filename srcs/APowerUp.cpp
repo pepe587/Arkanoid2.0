@@ -15,7 +15,7 @@ void APowerUp::updatePos()
 	this->pos.y += this->V.y;
 }
 
-bool APowerUp::checkCollition(C_Rectangle &R, Sound &sound, std::vector<Ball> &v)
+bool APowerUp::checkCollision(C_Rectangle &R, Sound &sound, std::vector<Ball> &v)
 {
 	if ((int)this->pos.y == (int)R.getPos().y - (int)R.getSize().y / 2 &&
 		(this->pos.x >= (R.getPos().x ) && this->pos.x <= (R.getPos().x + R.getSize().x)))

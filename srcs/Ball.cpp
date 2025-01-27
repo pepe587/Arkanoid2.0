@@ -18,7 +18,7 @@ void Ball::updatePos()
 
 Ball::~Ball(){}
 
-bool Ball::checkCollition(C_Rectangle &R, Sound &sound, std::vector<Brick> &Bricks, int &b)
+bool Ball::checkCollision(C_Rectangle &R, Sound &sound, std::vector<Brick> &Bricks, int &b, std::vector<APowerUp *> &PowerUps)
 {
 	for (size_t i = 0; i < Bricks.size(); ++i)
 	{
@@ -30,6 +30,14 @@ bool Ball::checkCollition(C_Rectangle &R, Sound &sound, std::vector<Brick> &Bric
 			{
 				Bricks.erase(Bricks.begin() + i);
 				++b;
+				if (GetRandomValue(1, 10) == 5)
+				{
+					PowerUps.push_back(new ExtraBall(Vector2 {Bricks[i].getPos().x + Bricks[i].getSize().x / 2, Bricks[i].getPos().y + Bricks[i].getSize().y / 2}, Vector2 {0, 0.5}));
+				}
+				else if (GetRandomValue(1, 10) == 5)
+				{
+					PowerUps.push_back(new MultiBall(Vector2 {Bricks[i].getPos().x + Bricks[i].getSize().x / 2, Bricks[i].getPos().y + Bricks[i].getSize().y / 2}, Vector2 {0, 0.5}));
+				}
 			}
 			return true;
 		}
