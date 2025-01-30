@@ -7,14 +7,70 @@
 	-Find solution to the problem of FPS (if FPS > speed >) IMPORTANT (raycasting can be a solution)
 	-Fix the bug of the percent
 	-Change the method of the install the dependencies (idk if this its a good idea), search for AppImage for linux and a .exe installer for windows
-	Improve FPS
+	-Improve FPS
+	-Change all the geeting of the monitor size to a method
 */
 
-bool thereAreUtil(std::vector<APowerUp *> &v)
+void *refresh_movables(void *_movables)
 {
+	t_movables movables = *(t_movables *)_movables;
+
+	InitAudioDevice();
+	Sound sound = LoadSound("sounds/ball-bounce.wav");
+	/*Rectangle movement*/
+	while (!WindowShouldClose())
+	{
+		if (IsKeyDown(KEY_RIGHT))
+		{
+			pthread_mutex_lock(&(movables.m_rectangle));
+			movables.R.move(2);
+			pthread_mutex_unlock(&(movables.m_rectangle));
+		}
+		if (IsKeyDown(KEY_LEFT))
+		{
+			pthread_mutex_lock(&(movables.m_rectangle));
+			movables.R.move(-2);
+			pthread_mutex_unlock(&(movables.m_rectangle));
+		}
+		/*Ball movement & check collision*/
+		pthread_mutex_lock(&(movables.m_balls));
+		for (unsigned long i = 0; i < movables.Balls.size(); ++i)
+		{
+			movables.Balls[i].updatePos();
+			if (!movables.Balls[i].checkCollision(movables.R, sound, movables.Bricks, movables.BricksBreaks, movables.PowerUps))
+			{
+				movables.Balls.erase(movables.Balls.begin() + i);
+				--i;
+			}
+		}
+		pthread_mutex_unlock(&(movables.m_balls));
+		/*Power Ups movement & check collision + Boost*/
+		pthread_mutex_lock(&(movables.m_powerups));
+		for (unsigned long i = 0; i < movables.PowerUps.size(); ++i)
+		{
+			movables.PowerUps[i]->updatePos();
+			if (!movables.PowerUps[i]->checkCollision(movables.R, sound, movables.Balls))
+			{
+				delete movables.PowerUps[i];
+				movables.PowerUps.erase(movables.PowerUps.begin() + i);
+				--i;
+			}
+		}
+		pthread_mutex_unlock(&(movables.m_powerups));
+	}
+	return (NULL);
+}
+
+bool thereAreUtil(std::vector<APowerUp *> &v, t_movables &movables)
+{
+	pthread_mutex_lock(&(movables.m_powerups));
 	for (unsigned long i = 0; i < v.size(); ++i)
 		if (dynamic_cast<ExtraBall *>(v[i]))
+		{
+			pthread_mutex_unlock(&(movables.m_powerups));
 			return true;
+		}
+	pthread_mutex_unlock(&(movables.m_powerups));
 	return false;
 }
 
@@ -104,10 +160,9 @@ int main(void)
 {
 	std::vector<Ball> Balls;
 	std::vector<APowerUp *> PowerUps;
-	InitWindow(GetMonitorWidth(0), GetMonitorHeight(0), "Game");
+	InitWindow(1, 1, "Game");
+	SetWindowSize(GetMonitorWidth(0), GetMonitorHeight(0));
 	ToggleFullscreen();
-	InitAudioDevice();
-	Sound sound = LoadSound("sounds/ball-bounce.wav");
 	std::vector<Brick> Bricks = intToBrick();
 	int	BricksBreakables = brickeableBricks(Bricks);
 	int BricksBreaks = 0;
@@ -120,14 +175,19 @@ int main(void)
 	/*First Ball of the Game (HARDCODED VALUES)*/
 	Balls.push_back(Ball(Vector2 {(float)GetMonitorWidth(0) / 2, (float)(GetMonitorHeight(0) / 1.5)}, Vector2 {0.5, 1}));
 	
-	/*TEST FOR ADD X QTY OF BALLS IN A RANDOM POS WITH A RANDOM VECTOR SPEED*/
-	//for (int i = 0; i < 1000; ++i)
-	//	Balls.push_back(Ball(GetMonitorWidth(0) / 2, GetMonitorHeight(0) / 2, Vector2 {(float)(GetRandomValue(-2000, 2000) / 10), (float)(GetRandomValue(-2000, 2000) / 10)}));
-	/*END OF THE TEST*/
 	C_Rectangle R;
 	double time = 0;
 	int fps_counter = 0;
 	int actual_fps = 0;
+	pthread_mutex_t mutexes[4];
+	pthread_mutex_init(&(mutexes[0]), NULL);
+	pthread_mutex_init(&(mutexes[1]), NULL);
+	pthread_mutex_init(&(mutexes[2]), NULL);
+	pthread_mutex_init(&(mutexes[3]), NULL);
+	t_movables movables = {Balls, R, Bricks, PowerUps, BricksBreaks, mutexes[0], mutexes[1], mutexes[2], mutexes[3]};
+	pthread_t *thread = new pthread_t;
+	pthread_create(thread, NULL, refresh_movables, &movables);
+	/*Render Thread*/
 	while (!WindowShouldClose())
 	{
 		/*Calculate FPS*/
@@ -137,52 +197,51 @@ int main(void)
 			time = GetTime();
 			fps_counter = 0;
 		}
-		/*Rectangle movement*/
-		if (IsKeyDown(KEY_RIGHT))
-			R.move(2);
-		if (IsKeyDown(KEY_LEFT))
-			R.move(-2);
-		/*Ball movement & check collision*/
-		for (unsigned long i = 0; i < Balls.size(); ++i)
-		{
-			Balls[i].updatePos();
-			if (!Balls[i].checkCollision(R, sound, Bricks, BricksBreaks, PowerUps))
-			{
-				Balls.erase(Balls.begin() + i);
-				--i;
-			}
-		}
-		/*Power Ups movement & check collision + Boost*/
-		for (unsigned long i = 0; i < PowerUps.size(); ++i)
-		{
-			PowerUps[i]->updatePos();
-			if (!PowerUps[i]->checkCollision(R, sound, Balls))
-			{
-				delete PowerUps[i];
-				PowerUps.erase(PowerUps.begin() + i);
-				--i;
-			}
-		}
 		/*No balls = No party*/
-		if (!Balls.size() && !thereAreUtil(PowerUps))
+		pthread_mutex_lock(&movables.m_balls);
+		if (!Balls.size() && !thereAreUtil(PowerUps, movables))
+		{
 			break ;
+			pthread_mutex_unlock(&movables.m_balls);
+		}
+		pthread_mutex_unlock(&movables.m_balls);
+
 		/*Draw Scope*/
 		BeginDrawing();
 		ClearBackground(BLACK);
 		DrawText(("FPS: " + std::to_string(actual_fps)).c_str(), 10, 10, 50, WHITE);
 		DrawText(((std::to_string((((float)BricksBreaks / (float)BricksBreakables)) * 100) + " %").c_str()), 10, 100, 50, WHITE);
 		DrawRectangle(GetMonitorWidth(0) * 0.25, 0, GetMonitorWidth(0) * 0.5, GetMonitorHeight(0), BLUE);
+		
+		pthread_mutex_lock(&movables.m_rectangle);
 		R.draw();
+		pthread_mutex_unlock(&movables.m_rectangle);
+
+		pthread_mutex_lock(&movables.m_bricks);
 		for (unsigned long i = 0; i < Bricks.size(); ++i)
 			Bricks[i].Draw();
+		pthread_mutex_unlock(&movables.m_bricks);
+
+		pthread_mutex_lock(&movables.m_balls);
 		for (unsigned long i = 0; i < Balls.size(); ++i)
 			Balls[i].Draw();
+		pthread_mutex_unlock(&movables.m_balls);
+		
+		pthread_mutex_lock(&movables.m_powerups);
 		for (unsigned long i = 0; i < PowerUps.size(); ++i)
 			PowerUps[i]->Draw();
-        EndDrawing();
+		pthread_mutex_unlock(&movables.m_powerups);
+        
+		EndDrawing();
 		++fps_counter;
 	}
+	pthread_mutex_lock(&movables.m_balls);
 	for (unsigned long i = 0; i < PowerUps.size(); ++i)
 		delete PowerUps[i];
+	pthread_mutex_unlock(&movables.m_balls);
+	pthread_detach(*thread);
 	CloseWindow();
+	delete thread;
+	return 0;
 }
+

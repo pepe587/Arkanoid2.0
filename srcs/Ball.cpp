@@ -4,6 +4,8 @@ Ball::Ball(Vector2 _pos, Vector2 _V) : pos(_pos), V(_V)
 {
 	Limits.x = GetMonitorWidth(0) * 0.75;
 	Limits.y = GetMonitorHeight(0);
+	MonitorProps.x = GetMonitorWidth(0);
+	MonitorProps.y = GetMonitorHeight(0);
 }
 
 void Ball::Draw()
@@ -42,7 +44,7 @@ bool Ball::checkCollision(C_Rectangle &R, Sound &sound, std::vector<Brick> &Bric
 			return true;
 		}
 	}
-	if (pos.x >= Limits.x || pos.x <= GetMonitorWidth(0) * 0.25)
+	if (pos.x >= Limits.x || pos.x <= MonitorProps.x * 0.25)
 	{
 		PlaySound(sound);
 		V.x *= -1;

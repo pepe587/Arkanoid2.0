@@ -6,6 +6,8 @@ C_Rectangle::C_Rectangle()
 	this->y = (GetMonitorHeight(0) * 0.75);
 	this->width = (GetMonitorWidth(0) * 0.125);
 	this->x = (GetMonitorWidth(0) / 2) - (this->width / 2);
+	MonitorProps.x = GetMonitorWidth(0);
+	MonitorProps.y = GetMonitorHeight(0);
 }
 
 C_Rectangle::~C_Rectangle()
@@ -14,8 +16,8 @@ C_Rectangle::~C_Rectangle()
 
 void C_Rectangle::move(int n)
 {
-	if ((this->x <= GetMonitorWidth(0) * 0.25 && n < 0)
-		|| (this->x >= GetMonitorWidth(0) * 0.75 - this->width && n > 0))
+	if ((this->x <= MonitorProps.x * 0.25 && n < 0)
+		|| (this->x >= MonitorProps.x * 0.75 - this->width && n > 0))
 		return ;
 	this->x += n;
 }

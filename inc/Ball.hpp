@@ -12,6 +12,7 @@ class Ball
 		Vector2 pos;
 		Vector2 V;
 		Vector2 Limits;
+		Vector2 MonitorProps;
 	public:
 		Ball(Vector2 pos, Vector2 V);
 		void Draw();

@@ -7,6 +7,7 @@ class C_Rectangle
 		int y;
 		int width;
 		int height;
+		Vector2 MonitorProps;
 	public:
 		C_Rectangle();
 		void draw();
