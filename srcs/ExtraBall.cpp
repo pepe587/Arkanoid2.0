@@ -7,7 +7,7 @@ ExtraBall::~ExtraBall(){}
 
 void ExtraBall::Boost(std::vector<Ball> &v)
 {
-	v.push_back(Ball((this->pos), Vector2 {(float)(GetRandomValue(-20, 20) / 10), (float)GetRandomValue(-5, -20) / 10}));
+	v.push_back(Ball((this->pos), Vector2 {getRandom(-0.2, 0.2), getRandom(-0.2, -0.1)}));
 }
 
 void ExtraBall::Draw()

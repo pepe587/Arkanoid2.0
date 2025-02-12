@@ -49,6 +49,8 @@
 		"cstring": "cpp",
 		"optional": "cpp",
 		"ranges": "cpp",
-		"span": "cpp"
-	}
+		"span": "cpp",
+		"fstream": "cpp"
+	},
+	"cmake.sourceDirectory": "/home/pepe/Escritorio/repoArka/raylib"
 }

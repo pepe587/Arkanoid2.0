@@ -14,10 +14,10 @@ C_Rectangle::~C_Rectangle()
 {
 }
 
-void C_Rectangle::move(int n)
+void C_Rectangle::move(double n)
 {
-	if ((this->x <= MonitorProps.x * 0.25 && n < 0)
-		|| (this->x >= MonitorProps.x * 0.75 - this->width && n > 0))
+	if ((this->x <= MonitorProps.x * 0.25 && n < (float)0)
+		|| (this->x >= MonitorProps.x * 0.75 - this->width && n > (float)0))
 		return ;
 	this->x += n;
 }

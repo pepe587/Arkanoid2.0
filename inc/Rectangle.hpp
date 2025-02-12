@@ -3,7 +3,7 @@
 class C_Rectangle
 {
 	private:
-		int x;
+		double x;
 		int y;
 		int width;
 		int height;
@@ -11,7 +11,7 @@ class C_Rectangle
 	public:
 		C_Rectangle();
 		void draw();
-		void move(int n);
+		void move(double n);
 		Vector2 getPos() const;
 		Vector2 getSize() const;
 		~C_Rectangle();
