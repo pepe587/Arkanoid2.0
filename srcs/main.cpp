@@ -144,9 +144,6 @@ void new_game(char *level)
 	Balls.push_back(Ball(Vector2 {(float)GetMonitorWidth(0) / 2, (float)(GetMonitorHeight(0) / 1.5)}, Vector2 {0, 0.1}));
 	
 	C_Rectangle R;
-	double time = 0;
-	int fps_counter = 0;
-	int actual_fps = 0;
 	pthread_mutex_t mutexes[4];
 	pthread_mutex_init(&(mutexes[0]), NULL);
 	pthread_mutex_init(&(mutexes[1]), NULL);
@@ -154,19 +151,12 @@ void new_game(char *level)
 	pthread_mutex_init(&(mutexes[3]), NULL);
 	t_movables *movables = new t_movables;
 	*movables = {Balls, R, Bricks, PowerUps, BricksBreaks, mutexes[0], mutexes[1], mutexes[2], mutexes[3]};
-	
+
 	pthread_t *thread = new pthread_t;
 	pthread_create(thread, NULL, refresh_movables, movables);
 	/*Render Thread*/
 	while (!WindowShouldClose())
 	{
-		/*Calculate FPS*/
-		if (GetTime() - time >= 1)
-		{
-			actual_fps = fps_counter;
-			time = GetTime();
-			fps_counter = 0;
-		}
 		/*No balls = No party*/
 		pthread_mutex_lock(&movables->m_balls);
 		if ((!movables->Balls.size() && !thereAreUtil(movables)) || movables->BricksBreaks == BricksBreakables)
@@ -179,7 +169,7 @@ void new_game(char *level)
 		/*Draw Scope*/
 		BeginDrawing();
 		ClearBackground(BLACK);
-		DrawText(("FPS: " + std::to_string(actual_fps)).c_str(), 10, 10, 50, WHITE);
+		DrawText(("FPS: " + std::to_string(GetFPS())).c_str(), 10, 10, 50, WHITE);
 		DrawText(((std::to_string((((float)movables->BricksBreaks / (float)BricksBreakables)) * 100) + " %").c_str()), 10, 100, 50, WHITE);
 		DrawRectangle(GetMonitorWidth(0) * 0.25, 0, GetMonitorWidth(0) * 0.5, GetMonitorHeight(0), BLUE);
 		
@@ -203,7 +193,6 @@ void new_game(char *level)
 		pthread_mutex_unlock(&movables->m_powerups);
         
 		EndDrawing();
-		++fps_counter;
 	}
 	free_and_close(movables, thread);
 	return ;
