@@ -3,9 +3,94 @@
 /*To do List:
 	-Add all the Sounds
 	-Add more Power Ups + (IDEA) add power-downs
-	-Make the level creator
-	-Suicidarme.
+	-Make the level creator (90 %)
+	-Limit the while of the movement to 3000 iters per second
+	-Fix the Bug of the corners (Gameplay)
 */
+
+void	create_level()
+{
+	std::vector<Brick> Bricks;
+	Vector2 size = {(float)(GetMonitorWidth(0) / 5.9), (float)(GetMonitorHeight(0) / 10)};
+	Vector2 sizeB = {(float)(GetMonitorWidth(0) / 100), (float)(GetMonitorHeight(0) / 90)};
+	Button SBrick(Vector2 {(float)(GetMonitorWidth(0) * 0.25), (float)(GetMonitorHeight(0) - GetMonitorHeight(0) / 10)}, size);
+	Button IBrick(Vector2 {(float)(GetMonitorWidth(0) * 0.25 + GetMonitorWidth(0) / 6), (float)(GetMonitorHeight(0) - GetMonitorHeight(0) / 10)}, size);
+	Button RBrick(Vector2 {(float)(GetMonitorWidth(0) * 0.25 + GetMonitorWidth(0) / 3), (float)(GetMonitorHeight(0) - GetMonitorHeight(0) / 10)}, size);
+
+	Bricks.push_back(Brick(SIMPLE, Vector2 {(float)(GetMonitorWidth(0) * 0.25 +  GetMonitorWidth(0) / 12 - sizeB.x * 2), (float)(GetMonitorHeight(0) - GetMonitorHeight(0) / 10 + GetMonitorHeight(0) / 20 - sizeB.y * 2)}, Vector2 {sizeB.x * 4, sizeB.y * 4}));
+	Bricks.push_back(Brick(INDESTRUCTIBLE, Vector2 {(float)(GetMonitorWidth(0) * 0.25 + GetMonitorWidth(0) / 6 +  GetMonitorWidth(0) / 12 - sizeB.x * 2), (float)(GetMonitorHeight(0) - GetMonitorHeight(0) / 10 + GetMonitorHeight(0) / 20 - sizeB.y * 2)}, Vector2 {sizeB.x * 4, sizeB.y * 4}));
+	Bricks.push_back(Brick(RESISTANT, Vector2 {(float)(GetMonitorWidth(0) * 0.25 + GetMonitorWidth(0) / 3 +  GetMonitorWidth(0) / 12 - sizeB.x * 2), (float)(GetMonitorHeight(0) - GetMonitorHeight(0) / 10 + GetMonitorHeight(0) / 20 - sizeB.y * 2)}, Vector2 {sizeB.x * 4, sizeB.y * 4}));
+	Brick *actual = NULL;
+	while (1)
+	{
+		if (IsKeyDown(KEY_LEFT))
+		{
+			if (actual)
+				delete actual;
+			break ;
+		}
+
+		if (actual)
+			actual->setPos(roundPos(GetMousePosition()));
+
+		if (IsMouseButtonDown(0) && actual && canPutBrick())
+		{
+			actual->setPos(roundPos(GetMousePosition()));
+			if (!IsTaken(Bricks, *actual))
+				Bricks.push_back(*actual);
+		}
+
+		if (IsMouseButtonDown(1))
+			deleteByPos(Bricks);
+
+		BeginDrawing();
+		ClearBackground(BLACK);
+		DrawRectangle(GetMonitorWidth(0) * 0.25, 0, GetMonitorWidth(0) * 0.5, GetMonitorHeight(0), BLUE);
+		IBrick.Draw(BLACK, BLANK);
+		RBrick.Draw(BLACK, BLANK);
+		SBrick.Draw(BLACK, BLANK);
+
+		if (IBrick.isClicked())
+		{
+			if (actual)
+				delete actual;
+			actual = new Brick(INDESTRUCTIBLE, GetMousePosition(), sizeB);
+			usleep(100000);		
+		}
+		else if (SBrick.isClicked())
+		{
+			if (actual)
+				delete actual;
+			actual = new Brick(SIMPLE, GetMousePosition(), sizeB);
+			usleep(100000);
+		}
+		else if (RBrick.isClicked())
+		{
+			if (actual)
+				delete actual;
+			actual = new Brick(RESISTANT, GetMousePosition(), sizeB);
+			usleep(100000);
+		}
+		if (actual)
+			actual->Draw();
+		
+		for (size_t i = 0; i < Bricks.size(); ++i)
+			Bricks[i].Draw();
+		EndDrawing();
+	}
+	Input input(Vector2 {(float)(GetMonitorWidth(0) * 0.33), (float)(GetMonitorHeight(0) * 0.5)}, Vector2 {(float)(GetMonitorWidth(0) * 0.33), (float)(GetMonitorHeight(0) * 0.1)});
+	
+	while (!IsKeyDown(KEY_ENTER))
+	{
+		BeginDrawing();
+		DrawRectangleV(Vector2 {(float)(GetMonitorWidth(0) * 0.33), (float)(GetMonitorHeight(0) * 0.5)}, Vector2 {(float)(GetMonitorWidth(0) * 0.33), (float)(GetMonitorHeight(0) * 0.1)}, BLACK);
+		input.Draw(BLACK);
+		EndDrawing();
+		input.listenKeys();
+	}
+	BricksToFile(input.getValue(), Bricks);
+}
+
 
 void *refresh_movables(void *_movables)
 {
@@ -96,7 +181,7 @@ std::vector<Brick> fileToBrick(char *filename)
 	}
 	for (i = 0; std::getline(level, buffer, '\n'); ++i)
 	{
-		if (buffer.size() != 50)
+		if (buffer.size() != 51)
 		{
 			std::cout << "Invalid level!\n";
 			return std::vector<Brick> ();
@@ -151,6 +236,7 @@ void new_game(char *level)
 	pthread_mutex_init(&(mutexes[3]), NULL);
 	t_movables *movables = new t_movables;
 	*movables = {Balls, R, Bricks, PowerUps, BricksBreaks, mutexes[0], mutexes[1], mutexes[2], mutexes[3]};
+	t_movables local;
 
 	pthread_t *thread = new pthread_t;
 	pthread_create(thread, NULL, refresh_movables, movables);
@@ -174,24 +260,28 @@ void new_game(char *level)
 		DrawRectangle(GetMonitorWidth(0) * 0.25, 0, GetMonitorWidth(0) * 0.5, GetMonitorHeight(0), BLUE);
 		
 		pthread_mutex_lock(&movables->m_rectangle);
-		movables->R.draw();
+		local.R = movables->R;
 		pthread_mutex_unlock(&movables->m_rectangle);
+		local.R.draw();
 
 		pthread_mutex_lock(&movables->m_bricks);
-		for (unsigned long i = 0; i < movables->Bricks.size(); ++i)
-			movables->Bricks[i].Draw();
+		local.Bricks = movables->Bricks;
 		pthread_mutex_unlock(&movables->m_bricks);
+		for (unsigned long i = 0; i < local.Bricks.size(); ++i)
+			local.Bricks[i].Draw();
 
 		pthread_mutex_lock(&movables->m_balls);
-		for (unsigned long i = 0; i < movables->Balls.size(); ++i)
-			movables->Balls[i].Draw();
+		local.Balls = movables->Balls;
 		pthread_mutex_unlock(&movables->m_balls);
-		
+		for (unsigned long i = 0; i < local.Balls.size(); ++i)
+			local.Balls[i].Draw();
+
 		pthread_mutex_lock(&movables->m_powerups);
-		for (unsigned long i = 0; i < movables->PowerUps.size(); ++i)
-			movables->PowerUps[i]->Draw();
+		local.PowerUps = movables->PowerUps;
 		pthread_mutex_unlock(&movables->m_powerups);
-        
+        for (unsigned long i = 0; i < local.PowerUps.size(); ++i)
+			local.PowerUps[i]->Draw();
+
 		EndDrawing();
 	}
 	free_and_close(movables, thread);
@@ -213,12 +303,12 @@ void choose_level()
 	file = readdir(levels);
 	while (file)
 	{
-		if (file->d_name[0] != '.')
+		if (file->d_name[0] != '.' && checkExtension(file->d_name))
 		{
-			buttons.push_back(Button(Vector2 {(float)(GetMonitorWidth(0) * x), (float)(GetMonitorHeight(0) * y)}, Vector2 {(float)(GetMonitorWidth(0) * 0.1), (float)(GetMonitorHeight(0) * 0.05)}, file->d_name, WHITE));
+			buttons.push_back(Button(Vector2 {(float)(GetMonitorWidth(0) * x), (float)(GetMonitorHeight(0) * y)}, Vector2 {(float)(GetMonitorWidth(0) * 0.1), (float)(GetMonitorHeight(0) * 0.05)}, std::string (file->d_name).substr(0, strlen(file->d_name) - 5), WHITE));
 			map.push_back(std::make_pair(buttons[buttons.size() - 1], std::string ("levels/") + (file->d_name)));
 			x += 0.2;
-			if (x >= 1.05)
+			if (x >= 0.80)
 			{
 				x = 0.05;
 				y += 0.1;
@@ -265,6 +355,8 @@ int main(void)
 		EndDrawing();
 		if (new_game_button.isClicked())
 			choose_level();
+		if (create_level_button.isClicked())
+			create_level();
 	}
 	CloseWindow();
 	return 0;

@@ -33,6 +33,7 @@ bool Ball::checkCollision(C_Rectangle &R, Sound &sound, std::vector<Brick> &Bric
 				V.y *= -1;
 			else
 				V.x *= -1;
+			PlaySound(sound);
 			if (!Bricks[i].Hit())
 			{
 				Bricks.erase(Bricks.begin() + i);

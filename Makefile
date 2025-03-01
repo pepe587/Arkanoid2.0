@@ -1,7 +1,7 @@
 NAME=game
 FLAGS=-Wall -Werror -Wextra -O3 -g -fsanitize=address
 SRCS=srcs/main.cpp srcs/Rectangle.cpp srcs/Ball.cpp srcs/APowerUp.cpp srcs/ExtraBall.cpp \
-	srcs/MultiBall.cpp srcs/Brick.cpp srcs/utils.cpp srcs/Button.cpp
+	srcs/MultiBall.cpp srcs/Brick.cpp srcs/utils.cpp srcs/Button.cpp srcs/Input.cpp
 OBJS=$(SRCS:.cpp=.o)
 RAYLIB=raylib/raylib/libraylib.a
 

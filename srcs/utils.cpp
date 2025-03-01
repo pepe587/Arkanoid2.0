@@ -70,3 +70,70 @@ void	thread_sleep(struct timeval &start, struct timeval &end)
 	//	usleep(time_sleep);
 	usleep(100);
 }
+
+bool canPutBrick(void)
+{
+	Vector2 pos = roundPos(GetMousePosition());
+
+	if (pos.x < GetMonitorWidth(0) * 0.25 || pos.x >= GetMonitorWidth(0) * 0.74
+		|| pos.y > GetMonitorHeight(0) * 0.5)
+		return false;
+	return true;
+}
+
+Vector2 roundPos(Vector2 pos)
+{
+	Vector2 size = {(float)GetMonitorWidth(0) / 100, (float)GetMonitorHeight(0) / 90};
+	float x = GetMonitorWidth(0) * 0.25;
+	float y = 0;
+
+	while (x + size.x < pos.x)
+		x += size.x;
+	while (y + size.y < pos.y)
+		y += size.y;
+	return Vector2 {x, y};
+}
+
+void deleteByPos(std::vector<Brick> &b)
+{
+	Vector2 MousePos = roundPos(GetMousePosition());
+
+	for (size_t i = 0; i < b.size(); i++)
+		if (b[i].getPos().x == MousePos.x && b[i].getPos().y == MousePos.y)
+		{
+			b.erase(b.begin() + i);
+			return ;
+		}
+}
+
+bool IsTaken(std::vector<Brick> &b, Brick &newB)
+{
+	for (size_t i = 0; i < b.size(); i++)
+		if (b[i].getPos().x == newB.getPos().x
+			&& b[i].getPos().y == newB.getPos().y)
+			return true;
+	return false;
+}
+
+void BricksToFile(std::string filename, std::vector<Brick> &b)
+{
+	std::ofstream new_level("levels/" + filename + ".data");
+	std::string arrlevel[50];
+	Vector2 size = {(float)(GetMonitorWidth(0) / 100), (float)(GetMonitorHeight(0) / 90)};
+
+	for (int i = 0; i <= 49; ++i)
+		arrlevel[i] = std::string("000000000000000000000000000000000000000000000000000");
+
+	for (size_t i = 3; i < b.size(); ++i)
+		arrlevel[(int)(b[i].getPos().y / size.y)][(int)(b[i].getPos().x / size.x) - 26] = b[i].getType() + '0';
+	
+	for (int i = 0; i <= 49; ++i)
+	{
+		for (size_t x = 0; x < arrlevel[i].size(); ++x)
+			new_level << arrlevel[i][x];
+		if (i != 49)
+			new_level << '\n';
+	}
+
+	new_level.close();
+}

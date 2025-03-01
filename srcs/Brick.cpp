@@ -51,3 +51,13 @@ Vector2 Brick::getSize() const
 {
 	return this->size;
 }
+
+void Brick::setPos(Vector2 _pos)
+{
+	this->pos = _pos;	
+}
+
+short	Brick::getType() const
+{
+	return type;
+}

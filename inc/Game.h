@@ -9,6 +9,7 @@
 #include "MultiBall.hpp"
 #include "GLFW/glfw3.h"
 #include "Button.hpp" 
+#include "Input.hpp"
 #include <iostream>
 #include <vector>
 #include <unistd.h>
@@ -19,6 +20,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include <utility>
+#include <string.h>
 
 typedef struct s_movables
 {
@@ -39,3 +41,8 @@ bool	checkExtension(std::string filename);
 bool	thereAreUtil(t_movables *movables);
 int		GetFps(double &time, int &fps_counter);
 void	thread_sleep(struct timeval &start, struct timeval &end);
+bool	canPutBrick(void);
+Vector2 roundPos(Vector2 pos);
+void	deleteByPos(std::vector<Brick> &b);
+bool	IsTaken(std::vector<Brick> &b, Brick &newB);
+void	BricksToFile(std::string filename, std::vector<Brick> &b);

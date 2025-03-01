@@ -22,6 +22,8 @@ class Brick
 		bool ImBreakable();
 		Vector2 getPos() const;
 		Vector2 getSize() const;
+		short	getType() const;
+		void	setPos(Vector2 _pos);
 		~Brick();
 };
 
